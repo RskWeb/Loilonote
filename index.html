@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoliNote</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 2rem 0;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p.subtitle {
+            text-align: center;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+        textarea {
+            width: 100%;
+            height: 65vh;
+            background: #161b22;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+        .actions {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        button {
+            padding: 0.8rem 1.8rem;
+            margin: 0 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #share {
+            background: #8b5cf6;
+            color: white;
+        }
+        #share:hover { background: #7c4dff; }
+        #copy {
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+        }
+        #copy:hover { background: #30363d; }
+        input#link-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            background: #161b22;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        #status {
+            text-align: center;
+            margin-top: 1rem;
+            min-height: 1.5em;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LoliNote</h1>
+        <p class="subtitle">Simple, private, shareable notes — no account needed</p>
+        <textarea id="note" placeholder="Start typing your note here..."></textarea>
+        <div class="actions">
+            <button id="share">Create Shareable Link</button>
+            <button id="copy" style="display:none;">Copy Link</button>
+        </div>
+        <input type="text" id="link-input" readonly style="display:none;">
+        <p id="status">Type something, then click the button to generate a shareable link.</p>
+        
+        <p id="status"> © 2026 rskwebdabest ( discord id 1320251828511965266) . All rights reserved.</p>
+        <p id="status">please if anyone post it on anywhere and he said he owns it please dm rskwebdabest
+        (1320251828511965266) on discord </p>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('note');
+        const shareBtn = document.getElementById('share');
+        const copyBtn = document.getElementById('copy');
+        const linkInput = document.getElementById('link-input');
+        const status = document.getElementById('status');
+
+        function loadNote() {
+            if (location.hash.length > 1) {
+                const compressed = location.hash.substring(1);
+                const text = LZString.decompressFromEncodedURIComponent(compressed);
+                if (text !== null) {
+                    textarea.value = text;
+                    status.textContent = "Shared note loaded! Edit it and create a new link if you want.";
+                } else {
+                    status.textContent = "Invalid link — starting a new note.";
+                }
+            }
+        }
+
+        function createLink() {
+            const text = textarea.value.trim();
+            if (text === '') {
+                status.textContent = "Note is empty! Type something first.";
+                return;
+            }
+            const compressed = LZString.compressToEncodedURIComponent(text);
+            history.replaceState(null, null, '#' + compressed);
+            const url = location.href;
+            linkInput.value = url;
+            linkInput.style.display = 'block';
+            copyBtn.style.display = 'inline-block';
+            status.textContent = "Link ready! Share it anywhere:";
+        }
+
+        shareBtn.onclick = createLink;
+
+        copyBtn.onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(location.href);
+                status.textContent = "Link copied to clipboard!";
+            } catch (err) {
+                linkInput.select();
+                document.execCommand('copy');
+                status.textContent = "Link copied (fallback method)!";
+            }
+        };
+
+        window.onload = loadNote;
+    </script>
+</body>
+</html>
